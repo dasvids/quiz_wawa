@@ -34,7 +34,7 @@ export default function Flashcard({ flashcard }) {
         {flashcard.question}
         <div className="card-options">
           {flashcard.options.map((option) => {
-            return <div className="card-option">{option}</div>;
+            return <div className="card-option" key= {option}>{option}</div>;
           })}
         </div>
       </div>
