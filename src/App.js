@@ -16,41 +16,47 @@ function App() {
     });
   }, []);
 
-  useEffect(() => {
-    
-  }, []);
+  useEffect(() => {}, []);
 
   function decodeString(str) {
     const textArea = document.createElement("textArea");
     textArea.innerHTML = str;
     return textArea.value;
   }
-  
+
   function handleSubmit(e) {
     e.preventDefault();
-    axios.get("https://opentdb.com/api.php", {
-      params: {
-        amount: amountEl.current.value,
-        category: categoryEl.current.value
-      }
-    }).then((res) => {
-        setFlashcards(
-          res.data.results.map((questionItem, index) => {
-            const answer = decodeString(questionItem.correct_answer);
-            const options = [
-              ...questionItem.incorrect_answers.map((a) => decodeString(a)),
-              answer,
-            ];
-            return {
-              id: `${index} - ${Date.now()}`,
-              question: decodeString(questionItem.question),
-              answer: answer,
-              options: options.sort(() => Math.random() - 0.5),
-            };
-          })
-        );
-        //console.log(res.data.results);
-      });
+    // imagine rate limit 1 request per 5 second
+    setTimeout(() => {
+      axios
+        .get("https://opentdb.com/api.php", {
+          params: {
+            amount: amountEl.current.value,
+            category: categoryEl.current.value,
+          },
+        })
+        .then((res) => {
+          setFlashcards(
+            res.data.results.map((questionItem, index) => {
+              const answer = decodeString(questionItem.correct_answer);
+              const options = [
+                ...questionItem.incorrect_answers.map((a) => decodeString(a)),
+                answer,
+              ];
+              return {
+                id: `${index} - ${Date.now()}`,
+                question: decodeString(questionItem.question),
+                answer: answer,
+                options: options.sort(() => Math.random() - 0.5),
+              };
+            })
+          );
+          //console.log(res.data.results);
+        })
+        .catch((error) => {
+          console.error("You are rate limited", error);
+        });
+    }, 5000); // 5sec 
   }
 
   return (
@@ -70,7 +76,14 @@ function App() {
         </div>
         <div className="form-group">
           <label htmlFor="amount">Number of questions</label>
-          <input type="number" id="amount" min="1" step="1" defaultValue={10} ref={amountEl}/>
+          <input
+            type="number"
+            id="amount"
+            min="1"
+            step="1"
+            defaultValue={10}
+            ref={amountEl}
+          />
         </div>
         <div className="form-group">
           <button className="btn">Generate</button>
